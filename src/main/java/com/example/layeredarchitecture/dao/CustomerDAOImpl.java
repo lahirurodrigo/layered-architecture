@@ -2,12 +2,14 @@ package com.example.layeredarchitecture.dao;
 
 import com.example.layeredarchitecture.db.DBConnection;
 import com.example.layeredarchitecture.model.CustomerDTO;
+import javafx.scene.control.Alert;
 
 import java.sql.*;
 import java.util.ArrayList;
 
-public class CustomerDAOImpl {
+public class CustomerDAOImpl implements CustomerDAO {
 
+    @Override
     public ArrayList<CustomerDTO> getAllCustomers() throws SQLException, ClassNotFoundException {
 
         Connection connection = DBConnection.getDbConnection().getConnection();
@@ -23,6 +25,7 @@ public class CustomerDAOImpl {
         return getAllCustomer;
     }
 
+    @Override
     public boolean saveCustomer(CustomerDTO dto) throws SQLException, ClassNotFoundException {
 
         Connection connection = DBConnection.getDbConnection().getConnection();
@@ -34,6 +37,7 @@ public class CustomerDAOImpl {
         return pstm.executeUpdate()>0;
     }
 
+    @Override
     public boolean updateCustomer(CustomerDTO dto) throws SQLException, ClassNotFoundException {
 
         Connection connection = DBConnection.getDbConnection().getConnection();
@@ -45,6 +49,7 @@ public class CustomerDAOImpl {
         return pstm.executeUpdate()>0;
     }
 
+    @Override
     public boolean findExistence(String id) throws SQLException, ClassNotFoundException {
 
         Connection connection = DBConnection.getDbConnection().getConnection();
@@ -55,6 +60,7 @@ public class CustomerDAOImpl {
 
     }
 
+    @Override
     public boolean deleteCustomer(String id) throws SQLException, ClassNotFoundException {
 
         Connection connection = DBConnection.getDbConnection().getConnection();
@@ -65,6 +71,7 @@ public class CustomerDAOImpl {
 
     }
 
+    @Override
     public String generateNewId() throws SQLException, ClassNotFoundException {
 
         Connection connection = DBConnection.getDbConnection().getConnection();
@@ -76,5 +83,33 @@ public class CustomerDAOImpl {
         } else {
             return "C00-001";
         }
+    }
+
+    @Override
+    public CustomerDTO findById(String newValue) throws SQLException, ClassNotFoundException {
+
+        Connection connection = DBConnection.getDbConnection().getConnection();
+
+            if (!existCustomer(newValue + "")) {
+//                            "There is no such customer associated with the id " + id
+                new Alert(Alert.AlertType.ERROR, "There is no such customer associated with the id " + newValue + "").show();
+            }
+
+            PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Customer WHERE id=?");
+            pstm.setString(1, newValue + "");
+            ResultSet rst = pstm.executeQuery();
+            rst.next();
+            CustomerDTO customerDTO = new CustomerDTO(newValue + "", rst.getString("name"), rst.getString("address"));
+
+            return customerDTO;
+
+    }
+
+    @Override
+    public boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
+        Connection connection = DBConnection.getDbConnection().getConnection();
+        PreparedStatement pstm = connection.prepareStatement("SELECT id FROM Customer WHERE id=?");
+        pstm.setString(1, id);
+        return pstm.executeQuery().next();
     }
 }
